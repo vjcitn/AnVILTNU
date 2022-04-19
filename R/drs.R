@@ -1,4 +1,4 @@
-# demonstrate acquisition of signed URL
+#' demonstrate acquisition of signed URL
 #' @param drs_uri character(1) DRS URI to be resolved
 #' @return character(1) signed URL
 #' @note the default value for drs_uri is a CCDG CRAM file reference; the associated
