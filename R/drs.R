@@ -9,6 +9,6 @@ drs_access = function(drs_uri='drs://dg.4503:dg.4503/17141a26-90e5-4160-9c20-892
   on.exit(basilisk::basiliskStop(proc))
   basilisk::basiliskRun(proc, function(drs_uri) {
     drs_module = reticulate::import("terra_notebook_utils.drs")
-    drs$access(drs_uri)
+    drs_module$access(drs_uri)
     }, drs_uri=drs_uri)
 }
