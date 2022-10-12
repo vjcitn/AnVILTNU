@@ -59,12 +59,19 @@ We can also retrieve the help content for the python modules subordinate
 to terra-notebook-utils.
 
 ```{r lk2}
-tnu_help()
+cat(tnu_help())
 ```
 
 ## Generating signed URLS
 
 The default argument to `drs_access` is the google storage location of a CRAI file.
 ```{r lk3}
-drs_access()
+substr(drs_access(), 1, 80)
+```
+
+More features related to DRS become available when basilisk interfaces are added
+to this package.
+
+```{r lk4}
+cat(tnu_drs_help())
 ```
