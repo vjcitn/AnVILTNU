@@ -51,6 +51,7 @@ Once installation has succeeded, we use basilisk-mediated commands defined
 in the BiocTNU package to probe or use terra-notebook-utils.  We
 can get the names of all modules available after importing terra-notebook-utils.
 ```{r lk1}
+library(BiocTNU)
 tnu_top()
 ```
 
