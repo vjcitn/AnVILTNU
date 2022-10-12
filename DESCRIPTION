@@ -1,6 +1,6 @@
 Package: BiocTNU
 Title: interface to terra-notebook-utils
-Version: 0.0.2
+Version: 0.0.6
 Authors@R:
     person(given = "Vince",
            family = "Carey",
