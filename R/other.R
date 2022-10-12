@@ -1,3 +1,4 @@
+myhelp = function(...) reticulate::py_capture_output(reticulate::import_builtins()$help(...),type="stdout")
 
 #' demonstrate use of basilisk to present features of terra-notebook-utils
 #' @examples
@@ -21,7 +22,8 @@ tnu_help = function() {
   on.exit(basilisk::basiliskStop(proc))
   basilisk::basiliskRun(proc, function() {
     tnu = reticulate::import("terra_notebook_utils")
-    reticulate::py_help(tnu)
+    #reticulate::py_help(tnu)
+    myhelp(tnu)
     })
 }
 
@@ -34,6 +36,7 @@ tnu_drs_help = function() {
   on.exit(basilisk::basiliskStop(proc))
   basilisk::basiliskRun(proc, function() {
     tnu_drs = reticulate::import("terra_notebook_utils.drs")
-    reticulate::py_help(tnu_drs)
+    #reticulate::py_help(tnu_drs)
+    myhelp(tnu_drs)
     })
 }
