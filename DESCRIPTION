@@ -1,6 +1,6 @@
 Package: BiocTNU
 Title: interface to terra-notebook-utils
-Version: 0.0.6
+Version: 0.0.7
 Authors@R:
     person(given = "Vince",
            family = "Carey",
@@ -13,5 +13,5 @@ Suggests: knitr, BiocStyle, testthat, rmarkdown
 License: Artistic-2.0
 VignetteBuilder: knitr
 biocViews: Infrastructure
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Encoding: UTF-8
