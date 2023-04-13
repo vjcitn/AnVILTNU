@@ -2,11 +2,9 @@
 % Please edit documentation in R/drs.R
 \name{drs_access}
 \alias{drs_access}
-\title{demonstrate acquisition of signed URL}
+\title{Access DRS through terra-notebook-utilities}
 \usage{
-drs_access(
-  drs_uri = "drs://dg.4503:dg.4503/17141a26-90e5-4160-9c20-89202b369431"
-)
+drs_access(drs_uri)
 }
 \arguments{
 \item{drs_uri}{character(1) DRS URI to be resolved}
@@ -15,12 +13,18 @@ drs_access(
 character(1) signed URL
 }
 \description{
-demonstrate acquisition of signed URL
+\code{drs_access()} acquires a signed URL from a DRS
+address.
 }
 \note{
-the default value for drs_uri is a CCDG CRAM file reference; the associated
-CRAI file has DRS URI `drs://dg.4503:dg.4503/1447260e-654b-4f9a-9161-c511cbdd0f95`
+The URI used in the example is a CCDG CRAM file reference;
+the associated CRAI file has DRS URI
+\verb{drs://dg.4503:dg.4503/1447260e-654b-4f9a-9161-c511cbdd0f95}
 }
 \examples{
-drs_access()
+uri <- "drs://dg.4503:dg.4503/17141a26-90e5-4160-9c20-89202b369431"
+if (tnu_workspace_ok()) {
+    drs_access(uri)
+}
+
 }
