@@ -16,62 +16,77 @@ output:
 
 # Introduction
 
-The [DataBiosphere project](https://www.databiosphere.org) includes a vision
+The [DataBiosphere][] project includes a vision
 
 ![schema](https://raw.githubusercontent.com/vjcitn/BiocTNU/main/databiosfig.jpg)
 
 of which AnVIL/Terra forms a part.
 
-The [terra-notebook-utils python modules](https://github.com/DataBiosphere/terra-notebook-utils)
-is described as a "Python API and CLI providing utilities for working with DRS objects, VCF files, and the Terra notebook environment."
+[DataBiosphere]: https://www.databiosphere.org
 
-This R package aims to provide a regulated interface between R and terra-notebook-utils
-for use in AnVIL.  
+The [terra-notebook-utils][ python modules is described as a "Python
+API and CLI providing utilities for working with DRS objects, VCF
+files, and the Terra notebook environment."
 
-By "regulated" we mean that the entire python ecosystem used
-to work with terra-notebook-utils is defined in a virtual environment.
-We make some exceptions for the sake of demonstration, but, for example,
-the `drs_access` command uses a very particular interface between
-R and python, using the Bioconductor [basilisk](https://bioconductor.org/packages/basilisk) package.
+[terra-notebook-utils]: https://github.com/DataBiosphere/terra-notebook-utils
+
+This R package aims to provide a regulated interface between R and
+terra-notebook-utils for use in AnVIL.
+
+By "regulated" we mean that the entire python ecosystem used to work
+with terra-notebook-utils is defined in a virtual environment.  We
+make some exceptions for the sake of demonstration, but, for example,
+the `drs_access` command uses a very particular interface between R
+and python, using the Bioconductor [basilisk][] package.
+
+[basilisk]: https://bioconductor.org/packages/basilisk
 
 # Basic concepts
 
 ## Installing in an AnVIL workspace, Oct 2022
 
-As of 10/2022, BiocTNU exists in a github repository.  To install and use
-properly with R in AnVIL
+As of 10/2022, BiocTNU exists in a github repository.  To install and
+use properly with R in AnVIL
 
-- ensure there is a .Renviron file in the home folder with content `PIP_USER=false`
+- ensure there is a .Renviron file in the home folder with content
+  `PIP_USER=false`
 - use `BiocManager::install("vjcitn/BiocTNU")`
-- verify that `library(BiocTNU); example(drs_access)` produces a signed URL
+- verify that `library(BiocTNU); example(drs_access)` produces a
+  signed URL
 
 ## Probing available features
 
-Once installation has succeeded, we use basilisk-mediated commands defined
-in the BiocTNU package to probe or use terra-notebook-utils.  We
-can get the names of all modules available after importing terra-notebook-utils.
+Once installation has succeeded, we use basilisk-mediated commands
+defined in the BiocTNU package to probe or use terra-notebook-utils.
+We can get the names of all modules available after importing
+terra-notebook-utils.
+
 ```{r lk1}
 library(BiocTNU)
 tnu_top()
 ```
 
-We can also retrieve the help content for the python modules subordinate
-to terra-notebook-utils.
+We can also retrieve the help content for the python modules
+subordinate to terra-notebook-utils.
 
 ```{r lk2}
-cat(tnu_help())
+tnu_help()
 ```
 
 ## Generating signed URLS
 
-The default argument to `drs_access` is the google storage location of a CRAI file.
+The argument to `drs_access` is the google storage location of a CRAI
+file.
+
 ```{r lk3}
-substr(drs_access(), 1, 80)
+uri <- "drs://dg.4503:dg.4503/17141a26-90e5-4160-9c20-89202b369431"
+if (tnu_workspace_ok())
+    substr(drs_access(uri), 1, 80)
 ```
 
-More features related to DRS become available when basilisk interfaces are added
-to this package.
+More features related to DRS become available when basilisk interfaces
+are added to this package.
 
 ```{r lk4}
-cat(tnu_drs_help())
+tnu_drs_help()
 ```

@@ -1,18 +1,39 @@
 Package: BiocTNU
-Date: 2022-10-12
-Title: interface to terra-notebook-utils
-Version: 0.0.7
+Title: Interface to terra-notebook-utils
+Version: 0.0.8
 Authors@R:
-    person(given = "Vince",
-           family = "Carey",
-           role = c("aut", "cre"),
-           email = "stvjc@channing.harvard.edu",
-           comment = c(ORCID = "0000-0003-4046-0063"))
-Description: 
-Depends: R (>= 4.0.0), tools, utils, reticulate, basilisk, BiocStyle
-Suggests: knitr, testthat, rmarkdown
+    c(person(
+        given = "Vince",
+        family = "Carey",
+        role = c("aut", "cre"),
+        email = "stvjc@channing.harvard.edu",
+        comment = c(ORCID = "0000-0003-4046-0063")
+    ), person(
+        given = "Martin",
+        family = "Morgan",
+        role = "aut",
+        comment = c(ORCID = "0000-0002-5874-8148")
+    ))
+Description: The 'terra-notebook-utils' Python module
+    <https://github.com/DataBiosphere/terra-notebook-utils> provides
+    an interface to Terra / AnVIL notebook functionality, in
+    particular DRS resolution to signed URLs. BiocTNU provides an
+    interface to the Python module, providing the R user with a
+    familiar experience. BiocTNU uses the `basilisk` system
+    <https://bioconductor.org/packages/basilisk> to ensure a
+    reproducible Python environment independent of other Python
+    installations on the user system.
+Depends: R (>= 4.0.0)
+Imports: reticulate, basilisk
+Suggests:
+    knitr,
+    testthat (>= 3.0.0),
+    rmarkdown,
+    BiocStyle
 License: Artistic-2.0
 VignetteBuilder: knitr
 biocViews: Infrastructure
-RoxygenNote: 7.2.1
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
 Encoding: UTF-8
+Config/testthat/edition: 3
