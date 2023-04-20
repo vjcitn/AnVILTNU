@@ -1,4 +1,26 @@
-#' @rdname drs_access
+drs_validate <-
+    function(drs_uri, namespace, name, ...)
+{
+    stopifnot(
+        is_drs_uri(drs_uri),
+        is_scalar_character(namespace),
+        is_scalar_character(name),
+        ...
+    )
+}
+
+drs_do <-
+    function(module_function, ...)
+{
+    proc <- basiliskStart(bsklenv)
+    on.exit(basiliskStop(proc))
+    basiliskRun(proc, function(...) {
+        drs_module <- import("terra_notebook_utils.drs")
+        drs_module[[module_function]](...)
+    }, ...)
+}
+
+#' @rdname drs
 #'
 #' @title Access DRS through terra-notebook-utilities
 #'
@@ -15,7 +37,7 @@
 #'
 #' @param billing_project NULL or character(1) AnVIL billing project.
 #'
-#' @return character(1) signed URL
+#' @return `drs_access()` returns a character(1) signed URL
 #'
 #' @note The URI used in the example is a CCDG CRAM file reference;
 #'     the associated CRAI file has DRS URI
@@ -37,26 +59,57 @@ drs_access <-
         name = tnu_workspace_name(),
         billing_project = NULL)
 {
-    stopifnot(
-        is_drs_uri(drs_uri),
-        is_scalar_character(namespace),
-        is_scalar_character(name),
+    drs_validate(
+        drs_uri = drs_uri,
+        namespace = namespace, name = name,
         is.null(billing_project) || is_scalar_character(billing_project)
     )
-    namespace <- tnu_workspace_namespace()
-    name <- tnu_workspace_name()
 
-    proc <- basiliskStart(bsklenv)
-    on.exit(basiliskStop(proc))
-    basiliskRun(proc, function(drs_uri) {
-        drs_module <- import("terra_notebook_utils.drs")
-        drs_module$access(
-            drs_uri,
-            workspace_namespace = namespace,
-            workspace_name = name,
-            billing_project = billing_project
-        )
-    }, drs_uri = drs_uri)
+    drs_do(
+        "access", drs_uri,
+        workspace_name = name, workspace_namespace = namespace,
+        billing_project = billing_project
+    )
+}
+
+#' @rdname drs
+#'
+#' @description `drs_copy()` copies a DRS url to the local file
+#'     system.
+#'
+#' @param destination character(1) directory to which the DRS file
+#'     will be copied.
+#'
+#' @return `drs_copy()` returns the local file path to the copied
+#'     file.
+#'
+#' @examples
+#' if (tnu_workspace_ok()) {
+#'    destination <- tempfile()
+#'    drs_copy(uri, destination)
+#' }
+#'
+#' @export
+drs_copy <-
+    function(
+     drs_uri, destination,
+     namespace = tnu_workspace_namespace(),
+     name = tnu_workspace_name())
+{
+    drs_validate(
+        drs_uri = drs_uri,
+        namespace = namespace, name = name,
+        is_scalar_character(destination)
+    )
+    if (!dir.exists(destination))
+        dir.create(destination, recursive = TRUE)
+    ## FIXME what if the file already exists in `destination`?
+
+    drs_do(
+        "copy", drs_uri, dst = destination,
+        workspace_namespace = namespace,
+        workspace_name = name
+    )
 }
 
 ## possible functions to implement: copy, copy_batch,
