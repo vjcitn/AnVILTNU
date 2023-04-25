@@ -17,7 +17,8 @@ Authors@R:
         given = "Kayla",
         family = "Interdonato",
         role = "aut",
-        comment = c(ORCID = "0000-0002-8461-1882"))
+        comment = c(ORCID = "0000-0002-8461-1882")
+    ))
 Description: The 'terra-notebook-utils' Python module
     <https://github.com/DataBiosphere/terra-notebook-utils> provides
     an interface to Terra / AnVIL notebook functionality, in
