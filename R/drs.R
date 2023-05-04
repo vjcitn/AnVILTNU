@@ -67,21 +67,21 @@ drs_access <-
 
     drs_do(
         "access", drs_uri,
-        workspace_name = name, workspace_namespace = namespace,
-        billing_project = billing_project
+        workspace_name = name, workspace_namespace = namespace
+        #billing_project = billing_project
     )
 }
 
 #' @rdname drs
 #'
-#' @description `drs_copy()` copies a DRS url to the local file
-#'     system.
+#' @description `drs_copy()` copies a DRS url or to the local file
+#'     system. This can be a single url or multiple.
 #'
 #' @param destination character(1) directory to which the DRS file
 #'     will be copied.
 #'
-#' @return `drs_copy()` returns the local file path to the copied
-#'     file.
+#' @return `drs_copy()` returns the local file path(s) to the copied
+#'     file(s).
 #'
 #' @examples
 #' if (tnu_workspace_ok()) {
@@ -105,11 +105,68 @@ drs_copy <-
         dir.create(destination, recursive = TRUE)
     ## FIXME what if the file already exists in `destination`?
 
-    drs_do(
-        "copy", drs_uri, dst = destination,
-        workspace_namespace = namespace,
-        workspace_name = name
+    if (length(drs_uri) == 1) {
+        drs_do(
+            "copy", drs_uri, dst = destination,
+            workspace_namespace = namespace,
+            workspace_name = name
+        )
+    } else {
+        drs_do(
+            "copy_batch", drs_urls = drs_uri, dst_pfx = destination,
+            workspace_namespace = namespace,
+            workspace_name = name
+        )
+    }
+}
+
+#' @rdname drs
+#'
+#' @description `drs_head()` heads a DRS object by byte.
+#'
+#' @return `drs_head()` returns
+#'
+#' @examples
+#' if (tnu_workspace_ok()) {
+#'    drs_head(uri)
+#' }
+#'
+#' @export 
+drs_head <-
+    function(
+        drs_uri,
+        namespace = tnu_workspace_namespace(),
+        name = tnu_workspace_name())
+{
+    drs_validate(
+        drs_uri = drs_uri,
+        namespace = namespace, name = name,
     )
+
+    drs_do(
+        "head", drs_uri,
+        workspace_names = name, workspace_namespace = namespace
+    )
+}
+
+#' @rdname drs
+#'
+#' @description `drs_info()` returns a curated subset of data from a DRS url.
+#'
+#' @return `drs_info()` returns a curated subset.
+#'
+#' @examples
+#' if (tnu_workspace_ok()) {
+#'    drs_info(uri)
+#' }
+#'
+#' @export 
+drs_info <-
+    function(drs_uri)
+{
+    drs_validate(drs_uri = drs_uri)
+
+    drs_do("info", drs_uri)
 }
 
 ## possible functions to implement: copy, copy_batch,
