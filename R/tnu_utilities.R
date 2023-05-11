@@ -57,7 +57,7 @@ tnu_help <-
 #' @rdname tnu_utilities
 #'
 #' @description `tnu_drs_help()` provides help on
-#'     terra-notebook-utils' 'drs' module.
+#'     terra-notebook-utils 'drs' module.
 #'
 #' @examples
 #' tnu_drs_help()
@@ -75,3 +75,26 @@ tnu_drs_help <-
     })
     invisible(result)
 }
+
+#' @rdname tnu_utilities
+#'
+#' @description `tnu_table_help()` provides help on
+#'     terra-notebook-utils 'table' module.
+#'
+#' @examples
+#' tnu_table_help()
+#'
+#' @export
+tnu_table_help <-
+    function()
+{
+    proc <- basiliskStart(bsklenv)
+    on.exit(basiliskStop(proc))
+    result <- basiliskRun(proc, function() {
+        tnu_drs <- import("terra_notebook_utils.table")
+        ## reticulate::py_help(tnu_drs)
+        my_help(tnu_drs)
+    })
+    invisible(result)
+}
+
