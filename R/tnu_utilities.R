@@ -9,6 +9,17 @@ my_help <-
     output
 }
 
+tnu_do <-
+    function(module, fun, ...)
+{
+    proc <- basiliskStart(bsklenv)
+    on.exit(basiliskStop(proc))
+    basiliskRun(proc, function(...) {
+        drs_module <- import(paste0("terra_notebook_utils.",module))
+        drs_module[[fun]](...)
+    }, ...)
+}
+
 #' @rdname tnu_utilities
 #'
 #' @title Helpers to Discover terra-notebook-utils Functionality
@@ -54,6 +65,20 @@ tnu_help <-
     invisible(result)
 }
 
+tnu_module_help <-
+    function(module)
+{
+   proc <- basiliskStart(bsklenv)
+   on.exit(basiliskStop(proc))
+   result <- basiliskRun(proc, function() {
+        tnu_mod <- import(paste0("terra_notebook_utils.",module))
+        ## reticulate::py_help(tnu_mod)
+        my_help(tnu_mod)
+   })
+
+   invisible(result)
+}
+
 #' @rdname tnu_utilities
 #'
 #' @description `tnu_drs_help()` provides help on
@@ -66,14 +91,7 @@ tnu_help <-
 tnu_drs_help <-
     function()
 {
-    proc <- basiliskStart(bsklenv)
-    on.exit(basiliskStop(proc))
-    result <- basiliskRun(proc, function() {
-        tnu_drs <- import("terra_notebook_utils.drs")
-        ## reticulate::py_help(tnu_drs)
-        my_help(tnu_drs)
-    })
-    invisible(result)
+    tnu_module_help("drs")
 }
 
 #' @rdname tnu_utilities
@@ -88,13 +106,5 @@ tnu_drs_help <-
 tnu_table_help <-
     function()
 {
-    proc <- basiliskStart(bsklenv)
-    on.exit(basiliskStop(proc))
-    result <- basiliskRun(proc, function() {
-        tnu_drs <- import("terra_notebook_utils.table")
-        ## reticulate::py_help(tnu_drs)
-        my_help(tnu_drs)
-    })
-    invisible(result)
+    tnu_module_help("table")
 }
-

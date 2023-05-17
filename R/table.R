@@ -8,16 +8,7 @@ table_validate <-
     )
 }
 
-table_do <-
-    function(module_function, ...)
-{
-    proc <- basiliskStart(bsklenv)
-    on.exit(basiliskStop(proc))
-    basiliskRun(proc, function(...) {
-        drs_module <- import("terra_notebook_utils.table")
-        drs_module[[module_function]](...)
-    }, ...)
-}
+#tnu_do(module, fun) #not exported, called within drs_*, table_* (add to tnu_utilities?)
 
 #' @rdname table_list
 #'
@@ -49,7 +40,8 @@ table_list <-
     )
 
     ## but access this like drs_do
-    tbl_generator <- table_do(
+    tbl_generator <- tnu_do(
+        "table",
         "list_tables",
         workspace = name,
         workspace_namespace = namespace
@@ -85,7 +77,8 @@ table_list_rows <-
         is_scalar_character(table), table %in% table_list()
     )
 
-    row_generator <- table_do(
+    row_generator <- tnu_do(
+        "table",
         "list_rows",
         table = table,
         workspace = name,
@@ -93,21 +86,36 @@ table_list_rows <-
     )
 
     rows <- reticulate::iterate(row_generator)
-    rows
+   
+
+    ## could this function go in above iterate as f? 
+    row_dat <- lapply(rows, function(row) {
+        row_id <- list(row$name)
+        names(row_id) <- paste0(table,"_id")       
+        #cbind(as.data.frame(row_id), row$attributes)
+        c(row_id, row$attributes)
+    })
+
+    row_dat
+    #dplyr::bind_rows(row_dat)
 }
 
 #' @rdname table_list
 #'
 #' @description `table_delete()` deletes a table from the AnVIL workspace.
 #'
-#' @return `table_delete()` returns updated list of tables after deletion.
+#' @param dry.run A boolean to indicate if the deletion should happen. The 
+#'     default is TRUE, meaning the deletion will not be executed.
+#'
+#' @return None
 #'
 #' @export
 table_delete <-
     function(
         table,
         namespace = tnu_workspace_namespace(),
-        name = tnu_workspace_name()
+        name = tnu_workspace_name(),
+        dry.run = TRUE
     )
 {
     table_validate(
@@ -115,15 +123,20 @@ table_delete <-
         is_scalar_character(table), table %in% table_list()
     )
 
-    table_do(
-        "delete",
-        table = table,
-        workspace = name,
-        workspace_namespace = namespace
-    )
-
-    tbls <- able_list()
-    tbls
+    if (dry.run) {
+        m <- paste0("The ",
+            table, 
+            " table will be deleted. If correct, rerun with dry.run = FALSE.")
+        message(m)
+    } else {
+        tnu_do(
+            "table",
+            "delete",
+            table = table,
+            workspace = name,
+            workspace_namespace = namespace
+        )
+    }
 }
 
 #' @rdname table_list
@@ -131,15 +144,20 @@ table_delete <-
 #' @description `table_delete_row()` deletes a single (or multiple) rows from
 #'     the AnVIL workspace table.
 #'
-#' @return `table_delete_row()` returns the list of rows after the deletion.
+#' @param row_id character(1) The row id(s) associated with the row(s) that 
+#'     are to be deleted.
+#'
+#' @return `table_delete_row()` returns the name of the table that had the 
+#'     row(s) deleted from.
 #'
 #' @export
 table_delete_row <-
     function(
         table,
-        row_num,
+        row_id,
         namespace = tnu_workspace_namespace(),
-        name = tnu_workspace_name()
+        name = tnu_workspace_name(),
+        dry.run = TRUE
     )
 {
     table_validate(
@@ -147,29 +165,76 @@ table_delete_row <-
         is_scalar_character(table), table %in% table_list()
     )
 
-    if (length(row_num) > 1) {
-        table_do(
-            "del_row",
+    if (dry.run) {
+        m <- paste0("Row(s) will be deleted from the ",
+            table,
+            " table. If correct, rerun with dry.run = FALSE.")
+        message(m)
+    } else {
+        if (length(row_id) > 1) {
+            tnu_do(
+                "table",
+                "del_rows",
+                table = table,
+                items = row_id,
+                workspace = name,
+                workspace_namespace = namespace
+            )
+        } else {
+            tnu_do(
+                "table",
+                "del_row",
+                table = table,
+                item = row_id,
+                workspace = name,
+                workspace_namespace = namespace
+            )
+        }
+    }
+    
+    table    
+}
+
+#' @rdname table_list
+#'
+#' @description `table_put_row()` adds a single (or multiple) rows to the AnVIL
+#'     workspace table.
+#'
+#' @return `table_put_row()` returns the id(s) of the row(s) added.
+#'
+#' @examples
+#'
+#' @export
+table_put_row <-
+    function(
+        table,
+        item,
+        namespace = tnu_workspace_namespace(),
+        name = tnu_workspace_name()
+    )
+{
+    table_validate(
+        namespace = namespace, name = name,
+        is_scalar_character(table)
+    )
+
+    if (any(lengths(item) > 1)) {
+        tnu_do(
+            "table",
+            "put_rows",
             table = table,
-            item = row_num,
+            items = item,
             workspace = name,
             workspace_namespace = namespace
         )
     } else {
-        table_do(
-            "del_rows",
+        tnu_do(
+            "table",
+            "put_row",
             table = table,
-            item = row_num,
+            item = item,
             workspace = name,
             workspace_namespace = namespace
         )
     }
-
-    tbl <- table_list_rows(table)
-    tbl
 }
-## put_row(table: str, item: Union[Tuple[str, Dict[str, Union[str, int, float, bool, Iterable[Union[str, int, float, bool]]]]], Dict[str, Union[str, int, float, bool, Iterable[Union[str, int, float, bool]]]]], workspace: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None) -> str
-
-## put_row("mytable", list(x = 1, y = "b", z = 2)) ???
-
-## put_rows(table: str, items: Iterable[Union[Tuple[str, Dict[str, Union[str, int, float, bool, Iterable[Union[str, int, float, bool]]]]], Dict[str, Union[str, int, float, bool, Iterable[Union[str, int, float, bool]]]]]], workspace: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None) -> List[str]
