@@ -25,8 +25,9 @@ table_validate <-
 #' @return `table_list()` returns a character(1) list.
 #' 
 #' @examples
-#' tnu_workspace("bioconductor-rpci-anvil/Bioconductor-Workflow-DESeq2")
+#' if (tnu_workspace_ok()) {
 #' table_list()
+#' }
 #'
 #' @export
 table_list <-
@@ -61,8 +62,9 @@ table_list <-
 #' @return `table_list_rows()` returns a list of row information.
 #'
 #' @examples
-#' tnu_workspace("bioconductor-rpci-anvil/Bioconductor-Workflow-DESeq2")
-#' table_list_rows("participant")
+#' if (tnu_workspace_ok()) {
+#' table_list_rows("test_table")
+#' }
 #'
 #' @export
 table_list_rows <-
@@ -109,6 +111,12 @@ table_list_rows <-
 #'
 #' @return None
 #'
+
+#' @examples
+#' if (tnu_workspace_ok()) {
+#' table_delete("test_table")
+#' }
+#'
 #' @export
 table_delete <-
     function(
@@ -150,6 +158,15 @@ table_delete <-
 #' @return `table_delete_row()` returns the name of the table that had the 
 #'     row(s) deleted from.
 #'
+#' @examples
+#' if(tnu_workspace_ok()) {
+#' table_delete_row("test_table", "d2098268-b3cc-4c22-b099-38c99586e196")
+#' 
+#' rws <- c("337af642-faa6-4eb6-a716-5645ccc84ec6",
+#'     "98899664-1b73-4c14-9826-31760416ffb4")
+#' table_delete_row("test_table", rws)
+#' }
+#'
 #' @export
 table_delete_row <-
     function(
@@ -190,9 +207,9 @@ table_delete_row <-
                 workspace_namespace = namespace
             )
         }
+
+    table
     }
-    
-    table    
 }
 
 #' @rdname table_list
@@ -200,9 +217,22 @@ table_delete_row <-
 #' @description `table_put_row()` adds a single (or multiple) rows to the AnVIL
 #'     workspace table.
 #'
+#' @param item A list of items to be added as a row in the specified table. If 
+#'     adding multiple rows each row must be it's own list inside a list. See 
+#'     example below.
+#'
 #' @return `table_put_row()` returns the id(s) of the row(s) added.
 #'
 #' @examples
+#' if (tnu_workspace_ok()) {
+#' rw1 <- list(a = "z", b = "y", c = "x", d = 10)
+#' rw2 <- list(a = "foo", b = "bar", c = "baz", d = 100)
+#' table_put_row("test_table", rw1)
+#' table_put_row("test_table", list(rw1, rw2))
+#'
+#' rw3 <- list(list(a = "az", b = "by", c = "cx", d = 5),
+#'     list(a = "du", b = "et", c = "fs", d = 50))
+#' } 
 #'
 #' @export
 table_put_row <-
