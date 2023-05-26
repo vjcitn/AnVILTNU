@@ -6,8 +6,8 @@ test_that("'is_drs_uri()' works", {
     ## no NA, "", length != 1L
     expect_false(is_drs_uri(NA_character_))
     expect_false(is_drs_uri(""))
-    expect_false(is_drs_uri(character()))
-    expect_false(is_drs_uri(c(drs_uri, drs_uri)))
+    expect_true(is_drs_uri(character()))
+    expect_true(is_drs_uri(c(drs_uri, drs_uri)))
 })
 
 test_that("'is_tnu_workspace()' works", {

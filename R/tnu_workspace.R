@@ -28,13 +28,13 @@ BIOC_TNU <- new.env(parent = emptyenv())
 #'
 #' @export
 tnu_workspace <-
-    function(x = NULL)
+    function(x = NULL, is_google_cloud = TRUE)
 {
     stopifnot(is.null(x) || is_tnu_workspace(x))
     if (is.null(x)) {
         workspace <- tnu_workspace_get()
     } else {
-        workspace <- tnu_workspace_set(x)
+        workspace <- tnu_workspace_set(x, is_google_cloud)
     }
     workspace
 }
@@ -81,9 +81,15 @@ tnu_workspace_get <-
 }
 
 tnu_workspace_set <-
-    function(x)
+    function(x, is_google_cloud)
 {
     BIOC_TNU[["tnu_workspace"]] <- x
+
+    if (is_google_cloud)
+        Sys.setenv("WORKSPACE_BUCKET" = AnVIL::avbucket(
+            tnu_workspace_namespace(),
+            tnu_workspace_name()
+        ))
 
     ## return the workspace namespace/name
     BIOC_TNU[["tnu_workspace"]]
