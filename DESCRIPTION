@@ -1,6 +1,6 @@
 Package: BiocTNU
 Title: Interface to terra-notebook-utils
-Version: 0.0.8
+Version: 0.0.9
 Authors@R:
     c(person(
         given = "Vince",
