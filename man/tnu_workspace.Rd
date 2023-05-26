@@ -5,7 +5,7 @@
 \alias{tnu_workspace_ok}
 \title{Manage workspace namespace and name needed by terra-notebook-utils}
 \usage{
-tnu_workspace(x = NULL)
+tnu_workspace(x = NULL, is_google_cloud = TRUE)
 
 tnu_workspace_ok()
 }

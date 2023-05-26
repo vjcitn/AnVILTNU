@@ -1,10 +1,10 @@
 drs_validate <-
-    function(drs_uri, namespace, name, ...)
+    function(drs_uri, namespace = NULL, name = NULL, ...)
 {
     stopifnot(
         is_drs_uri(drs_uri),
-        is_scalar_character(namespace),
-        is_scalar_character(name),
+        is.null(namespace) || is_scalar_character(namespace),
+        is.null(name) || is_scalar_character(name),
         ...
     )
 }
@@ -22,7 +22,7 @@ drs_do <-
 
 #' @rdname drs
 #'
-#' @title Access DRS through terra-notebook-utilities
+#' @title Access DRS Through terra-notebook-utilities
 #'
 #' @description `drs_access()` acquires a signed URL from a DRS
 #'     address.
@@ -37,18 +37,21 @@ drs_do <-
 #'
 #' @param billing_project NULL or character(1) AnVIL billing project.
 #'
-#' @return `drs_access()` returns a character(1) signed URL
-#'
-#' @note The URI used in the example is a CCDG CRAM file reference;
-#'     the associated CRAI file has DRS URI
-#'     `drs://dg.4503:dg.4503/1447260e-654b-4f9a-9161-c511cbdd0f95`
+#' @return `drs_access()` returns a character() vector of signed URLs.
 #'
 #' @importFrom reticulate import
 #'
 #' @examples
-#' uri <- "drs://dg.4503:dg.4503/17141a26-90e5-4160-9c20-89202b369431"
+#' uri <- c(
+#'     "drs://dg.4503/15fdd543-9875-4edf-8bc2-22985473dab6",
+#'     "drs://dg.4503/3c861ec6-d810-4058-b851-c0b19dd5933e",
+#'     "drs://dg.4503/374a0ad9-b3a2-47f3-8860-5083b302e478"
+#' )
 #' if (tnu_workspace_ok()) {
-#'     drs_access(uri)
+#'     print(drs_access(uri))
+#'     print(drs_copy(uri, tempfile())) # local copy
+#'     print(drs_info(uri))
+#'     print(drs_head(uri, 100))        # first 100 bytes of each file
 #' }
 #'
 #' @export
@@ -65,29 +68,25 @@ drs_access <-
         is.null(billing_project) || is_scalar_character(billing_project)
     )
 
-    drs_do(
-        "access", drs_uri,
-        workspace_name = name, workspace_namespace = namespace
-        #billing_project = billing_project
-    )
+    vapply(drs_uri, function(uri, namespace, name, billing_project) {
+        drs_do(
+            "access", uri,
+            workspace_name = name, workspace_namespace = namespace
+            ## billing_project = billing_project
+        )
+    }, character(1), namespace, name, billing_project)
 }
 
 #' @rdname drs
 #'
-#' @description `drs_copy()` copies a DRS url or to the local file
-#'     system. This can be a single url or multiple.
+#' @description `drs_copy()` copies DRS URLS to the local file system
+#'     or google bucket.
 #'
-#' @param destination character(1) directory to which the DRS file
-#'     will be copied.
+#' @param destination character(1) directory or google bucket
+#'     (starting with `gs://`) to which the DRS file will be copied.
 #'
-#' @return `drs_copy()` returns the local file path(s) to the copied
+#' @return `drs_copy()` returns the file or bucket path(s) to the copied
 #'     file(s).
-#'
-#' @examples
-#' if (tnu_workspace_ok()) {
-#'    destination <- tempfile()
-#'    drs_copy(uri, destination)
-#' }
 #'
 #' @export
 drs_copy <-
@@ -101,124 +100,106 @@ drs_copy <-
         namespace = namespace, name = name,
         is_scalar_character(destination)
     )
-    if (!dir.exists(destination))
-        dir.create(destination, recursive = TRUE)
-    ## FIXME what if the file already exists in `destination`?
 
-    if (length(drs_uri) == 1) {
-        drs_do(
-            "copy", drs_uri, dst = destination,
-            workspace_namespace = namespace,
-            workspace_name = name
-        )
+    if (startsWith(destination, "gs://")) {
+        .drs_copy_gs(drs_uri, destination, namespace, name)
     } else {
-        drs_do(
-            "copy_batch", drs_urls = drs_uri, dst_pfx = destination,
-            workspace_namespace = namespace,
-            workspace_name = name
-        )
+        ## FIXME: copy to local files result in an error
+        .drs_copy_local(drs_uri, destination, namespace, name)
     }
 }
 
-#' @rdname drs
-#'
-#' @description `drs_head()` heads a DRS object by byte.
-#'
-#' @return `drs_head()` returns
-#'
-#' @examples
-#' if (tnu_workspace_ok()) {
-#'    drs_head(uri)
-#' }
-#'
-#' @export 
-drs_head <-
-    function(
-        drs_uri,
-        namespace = tnu_workspace_namespace(),
-        name = tnu_workspace_name())
+.drs_copy_gs <-
+    function(drs_uri, destination, namespace, name)
 {
-    drs_validate(
-        drs_uri = drs_uri,
-        namespace = namespace, name = name,
-    )
-
     drs_do(
-        "head", drs_uri,
-        workspace_names = name, workspace_namespace = namespace
+        "copy_batch", drs_urls = drs_uri, dst_pfx = destination,
+        workspace_namespace = namespace,
+        workspace_name = name
     )
+    names <- drs_info(uri)$name
+    file.path(destination, names)
+}
+
+.drs_copy_local <-
+    function(drs_uri, destination, namespace, name)
+{
+    if (!dir.exists(destination))
+        dir.create(destination, recursive = TRUE)
+
+    access <- drs_access(drs_uri, namespace, name)
+    info <- drs_info(drs_uri)
+    result <- Map(function(access, info, destination) {
+        to_file <- file.path(destination, info$name)
+        download.file(access, to_file, quiet = interactive())
+        md5sum <- tools::md5sum(to_file)
+        if (!identical(as.vector(md5sum), info$checksums$md5)) {
+            stop(
+                "md5sum of '", uri, "' differs from expected:\n",
+                "  observed: ", md5sum, "\n",
+                "  expected: ", info$checksums$md5sum
+            )
+        }
+        to_file
+    }, access, info, MoreArgs = list(destination = destination))
+    unlist(result)
 }
 
 #' @rdname drs
 #'
-#' @description `drs_info()` returns a curated subset of data from a DRS url.
+#' @description `drs_head()` queries the DRS object for the first few
+#'     bytes of the object.
 #'
-#' @return `drs_info()` returns a curated subset.
+#' @param num_bytes integer(1) the number of bytes to return from the
+#'     'head' of th DRS object.
 #'
-#' @examples
-#' if (tnu_workspace_ok()) {
-#'    drs_info(uri)
-#' }
+#' @return `drs_head()` returns a list, with one element for each
+#'     `drs_uri`, of Python 'memoryview' of the DRS object.
 #'
-#' @export 
+#' @export
+drs_head <-
+    function(
+        drs_uri,
+        num_bytes = 1L,
+        namespace = tnu_workspace_namespace(),
+        name = tnu_workspace_name())
+{
+    num_bytes <- as.integer(num_bytes)
+    drs_validate(
+        drs_uri = drs_uri,
+        namespace = namespace, name = name,
+        is_scalar_integer(num_bytes),
+        as.integer(num_bytes) > 0L
+    )
+
+    lapply(drs_uri, function(uri, num_bytes, namespace, name) {
+        drs_do(
+            "head", uri, num_bytes = num_bytes,
+            workspace_name = name, workspace_namespace = namespace
+        )
+    }, num_bytes, namespace, name)
+}
+
+#' @rdname drs
+#'
+#' @description `drs_info()` returns a information about a DRS uri.
+#'
+#' @return `drs_info()` returns a list of lists (one element for each
+#'     `drs_uri`) with elements
+#'
+#' - `name`: the name of the DRS file, e.g., `"HG00536.final.cram.crai"`
+#' - `size`: file size in bytes; unfortunately, the size of large
+#'   files (>3 Gb) is returned as a negative number (integer overflow).
+#' - `updated`: date of last DRS resource modification.
+#' - `checksums`: a vector of checksums, e.g, `md5`.
+#'
+#' @export
 drs_info <-
     function(drs_uri)
 {
     drs_validate(drs_uri = drs_uri)
 
-    drs_do("info", drs_uri)
+    lapply(drs_uri, function(uri) {
+        drs_do("info", uri)
+    })
 }
-
-## possible functions to implement: copy, copy_batch,
-##    copy_batch_manifest, copy_batch_urls(?), copy_to_bucket,
-##    get_drs, get_drs_info
-
-## tnu_drs_help()
-##
-##     access(drs_url: str, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None, billing_project: Union[str, NoneType] = None) -> str
-
-##         Return a signed url for a drs:// URI, if available.
-
-
-##     blob_for_url(url: str, billing_project: Union[str, NoneType] = None) -> terra_notebook_utils.blobstore.Blob
-
-
-##     copy(drs_uri: str, dst: str, indicator_type: terra_notebook_utils.blobstore.progress.Indicator = <Indicator.bar: <class 'getm.progress.ProgressBar'>>, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None)
-##         Copy a DRS object to either the local filesystem, or to a
-##         Google Storage location if `dst` starts with "gs://".
-
-
-##     copy_batch(drs_urls: Union[Iterable[str], NoneType] = None, dst_pfx: Union[str, NoneType] = None, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None, indicator_type: terra_notebook_utils.blobstore.progress.Indicator = <Indicator.log: <class 'getm.progress.ProgressLogger'>>, manifest: Union[List[Dict[str, str]], NoneType] = None)
-
-##     copy_batch_manifest(manifest: List[Dict[str, str]], indicator_type: terra_notebook_utils.blobstore.progress.Indicator = <Indicator.log: <class 'getm.progress.ProgressLogger'>>, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None)
-
-##     copy_batch_urls(drs_urls: Iterable[str], dst_pfx: str, indicator_type: terra_notebook_utils.blobstore.progress.Indicator = <Indicator.log: <class 'getm.progress.ProgressLogger'>>, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None)
-
-##     copy_to_bucket(drs_uri: str, dst_key: str = '', dst_bucket_name: Union[str, NoneType] = None, indicator_type: terra_notebook_utils.blobstore.progress.Indicator = <Indicator.bar: <class 'getm.progress.ProgressBar'>>, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None)
-##         Resolve `drs_url` and copy into user-specified bucket
-##         `dst_bucket`.  If `dst_bucket` is None, copy into workspace
-##         bucket.
-
-##     enable_requester_pays(workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None)
-
-##     extract_tar_gz(drs_url: str, dst: Union[str, NoneType] = None, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None, billing_project: Union[str, NoneType] = None)
-##
-##         Extract a `.tar.gz` archive resolved by a DRS url. 'dst'
-##         may be either a local filepath or a 'gs://' url.  Default
-##         extraction is to the bucket for 'workspace'.
-
-##     get_drs(drs_url: str, fields: List[str]) -> requests.models.Response
-##         Request DRS information from martha.
-
-##     get_drs_blob(drs_url_or_info: Union[str, terra_notebook_utils.drs.DRSInfo], billing_project: Union[str, NoneType] = None) -> Union[terra_notebook_utils.blobstore.gs.GSBlob, terra_notebook_utils.blobstore.url.URLBlob]
-
-##     get_drs_info(drs_url: str, access_url: bool = False) -> terra_notebook_utils.drs.DRSInfo
-##
-##         Attempt to resolve gs:// url and credentials for a DRS
-##         object.
-
-##     head(drs_url: str, num_bytes: int = 1, workspace_name: Union[str, NoneType] = None, workspace_namespace: Union[str, NoneType] = None, billing_project: Union[str, NoneType] = None)
-##         Head a DRS object by byte.
-
-##     info(drs_url: str) -> dict
-## Return a curated subset of data from `get_drs`.
