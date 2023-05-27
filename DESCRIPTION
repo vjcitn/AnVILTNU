@@ -1,6 +1,6 @@
 Package: BiocTNU
 Title: Interface to terra-notebook-utils
-Version: 0.0.8
+Version: 0.0.9
 Authors@R:
     c(person(
         given = "Vince",
@@ -13,6 +13,11 @@ Authors@R:
         family = "Morgan",
         role = "aut",
         comment = c(ORCID = "0000-0002-5874-8148")
+    ), person(
+        given = "Kayla",
+        family = "Interdonato",
+        role = "aut",
+        comment = c(ORCID = "0000-0002-8461-1882")
     ))
 Description: The 'terra-notebook-utils' Python module
     <https://github.com/DataBiosphere/terra-notebook-utils> provides
