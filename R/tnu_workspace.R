@@ -10,6 +10,11 @@ BIOC_TNU <- new.env(parent = emptyenv())
 #' @param x NULL (get the existing value) or character(1) workspace
 #'     namespace and name, formatted as `NAMESPACE/NAME`.
 #'
+#' @param is_google_cloud logical(1) is the workspace on the google
+#'     cloud? If so, ensure that the environment variable
+#'     `WORKSPACE_BUCKET` is set, as this is used by
+#'     terra-notebook-utils during authentication.
+#'
 #' @details `tnu_workspace()` with no argument checks to see if the
 #'     workspace namespace and name have been assigned through a
 #'     previous call to `tnu_workspace()`, or are defined by the

@@ -12,6 +12,11 @@ tnu_workspace_ok()
 \arguments{
 \item{x}{NULL (get the existing value) or character(1) workspace
 namespace and name, formatted as \code{NAMESPACE/NAME}.}
+
+\item{is_google_cloud}{logical(1) is the workspace on the google
+cloud? If so, ensure that the environment variable
+\code{WORKSPACE_BUCKET} is set, as this is used by
+terra-notebook-utils during authentication.}
 }
 \description{
 \code{tnu_workspace()} gets (when \code{x = NULL}) or sets and

@@ -31,6 +31,7 @@ Description: The 'terra-notebook-utils' Python module
 Depends: R (>= 4.0.0)
 Imports: reticulate, basilisk
 Suggests:
+    AnVIL,
     knitr,
     testthat (>= 3.0.0),
     rmarkdown,
