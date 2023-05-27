@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(BiocTNU)
+library(AnVILTNU)
 
-test_check("BiocTNU")
+test_check("AnVILTNU")

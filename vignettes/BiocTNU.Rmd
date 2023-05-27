@@ -18,7 +18,7 @@ output:
 
 The [DataBiosphere][] project includes a vision
 
-![schema](https://raw.githubusercontent.com/vjcitn/BiocTNU/main/databiosfig.jpg)
+![schema](https://raw.githubusercontent.com/vjcitn/AnVILTNU/main/databiosfig.jpg)
 
 of which AnVIL/Terra forms a part.
 
@@ -45,24 +45,24 @@ and python, using the Bioconductor [basilisk][] package.
 
 ## Installing in an AnVIL workspace, Oct 2022
 
-As of 10/2022, BiocTNU exists in a github repository.  To install and
+As of 10/2022, AnVILTNU exists in a github repository.  To install and
 use properly with R in AnVIL
 
 - ensure there is a .Renviron file in the home folder with content
   `PIP_USER=false`
-- use `BiocManager::install("vjcitn/BiocTNU")`
-- verify that `library(BiocTNU); example(drs_access)` produces a
+- use `BiocManager::install("vjcitn/AnVILTNU")`
+- verify that `library(AnVILTNU); example(drs_access)` produces a
   signed URL
 
 ## Probing available features
 
 Once installation has succeeded, we use basilisk-mediated commands
-defined in the BiocTNU package to probe or use terra-notebook-utils.
+defined in the AnVILTNU package to probe or use terra-notebook-utils.
 We can get the names of all modules available after importing
 terra-notebook-utils.
 
 ```{r lk1}
-library(BiocTNU)
+library(AnVILTNU)
 tnu_top()
 ```
 

@@ -1,4 +1,4 @@
-Package: BiocTNU
+Package: AnVILTNU
 Title: Interface to terra-notebook-utils
 Version: 0.0.9
 Authors@R:
@@ -22,9 +22,9 @@ Authors@R:
 Description: The 'terra-notebook-utils' Python module
     <https://github.com/DataBiosphere/terra-notebook-utils> provides
     an interface to Terra / AnVIL notebook functionality, in
-    particular DRS resolution to signed URLs. BiocTNU provides an
+    particular DRS resolution to signed URLs. AnVILTNU provides an
     interface to the Python module, providing the R user with a
-    familiar experience. BiocTNU uses the `basilisk` system
+    familiar experience. AnVILTNU uses the `basilisk` system
     <https://bioconductor.org/packages/basilisk> to ensure a
     reproducible Python environment independent of other Python
     installations on the user system.

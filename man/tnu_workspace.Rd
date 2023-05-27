@@ -25,9 +25,9 @@ options, or system environment variables.
 \code{tnu_workspace()} with no argument checks to see if the
 workspace namespace and name have been assigned through a
 previous call to \code{tnu_workspace()}, or are defined by the
-package options \code{BiocTNU.WORKSPACE_NAMESPACE},
-\code{BiocTNU.WORKSPACE_NAME} (set via
-\code{options(BiocTNU.WORKSPACE_NAME = ...)}), or by the system
+package options \code{AnVILTNU.WORKSPACE_NAMESPACE},
+\code{AnVILTNU.WORKSPACE_NAME} (set via
+\code{options(AnVILTNU.WORKSPACE_NAME = ...)}), or by the system
 environment variables \code{WORKSPACE_NAMESPACE},
 \code{WORKSPACE_NAME}. Calls to \code{tnu_workspace()} have precedence
 over package options, which have precedence over system
