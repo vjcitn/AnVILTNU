@@ -47,6 +47,13 @@ firecloud_validate <-
 #' @examples
 #' if (tnu_workspace_ok()) {
 #'     tables()
+#'     table("test_table")
+#'     mycars <- head(mtcars) |>
+#'         dplyr::as_tibble(rownames = "model_id") |>
+#'         dplyr::mutate(`entity:model_id` = gsub(" ", "_", `entity:model_id`))
+#'     table_upload(mycars)
+#'     table_delete_values("model", "Mazda_RX4")
+#'     table_gadget()
 #' }
 #'
 #' @export
@@ -69,8 +76,8 @@ tables <-
     dplyr::tibble(
         table = jmesquery(response, "keys(@)"),
         count = jmesquery(response, "*.count"),
-        colnames = paste(c(jmesquery(response, "*.idName"),
-            jmesquery(response, "*.attributeNames")), collapse = ", ")
+        colnames = paste0(jmesquery(response, "*.idName"), ", ",
+            sapply(jmesquery(response, "*.attributeNames"), toString))
     )
 }
 
@@ -81,11 +88,6 @@ tables <-
 #' @param table character(1) table name.
 #'
 #' @return `table()` a tibble of data from the table.
-#'
-#' @examples
-#' if (tnu_workspace_ok()) {
-#'     table("test_table")
-#' }
 #'
 #' @export
 table <-
@@ -122,11 +124,6 @@ table <-
 #'
 #' @return `table_delete_values()` returns the name of the table that had the
 #'     row deleted from.
-#'
-#' @examples
-#' if (tnu_workspace_ok()) {
-#'     table_delete_values("test_table", "d2098268-b3cc-4c22-b099-38c99586e196")
-#' }
 #'
 #' @export 
 table_delete_values <-
@@ -166,12 +163,6 @@ table_delete_values <-
 #'
 #' @return NULL
 #'
-#' @examples
-#' if (tnu_workspace_ok()) {
-#'     
-#'     table_upload(mycars)
-#' }
-#'
 #' @export
 table_upload <-
     function(
@@ -183,7 +174,11 @@ table_upload <-
         namespace = namespace, name = name
     )
 
-    colnames(tbl)[1] <- paste0('entity:', colnames(tbl)[1])
+    if (!startsWith("entity:", colnames(tbl)[1]))
+        colnames(tbl)[1] <- paste0('entity:', colnames(tbl)[1])
+
+    if (length(grep(" ", tbl[[1]])) > 0L)
+        tbl[[1]] <- gsub(" ", "_", tbl[[1]])
 
     write.table(tbl, where <- tempfile(), sep = "\t", row.names = FALSE)
 
@@ -263,19 +258,14 @@ table_upload <-
 #'
 #' @return `table_gadget()` returns a tibble representing the selected table.
 #'
-#' @examples
-#' if (tnu_workspace_ok()) {
-#'     table_gadget()
-#' }
-#'
 #' @export
 table_gadget <- 
-    function()
+    function(namespace = tnu_workspace_namespace(), name = tnu_workspace_name())
 {
     DONE_FUN <- function(tibble, row_selected) tibble$table[row_selected]
-    table <- .gadget_run("Tables", tables(), DONE_FUN)
+    table <- .gadget_run("Tables", tables(namespace, name), DONE_FUN)
     if (length(table)) {
-        table(table)
+        table(table, namespace, name)
     }
     else {
         invisible()
