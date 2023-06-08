@@ -84,9 +84,89 @@ if (tnu_workspace_ok())
     substr(drs_access(uri), 1, 80)
 ```
 
-More features related to DRS become available when basilisk interfaces
-are added to this package.
+## Copying DRS URLS
+
+`drs_copy` is used to copy DRS URIs to a local file or to a google bucket. The
+function requries a destination where the URLS should be copied to.
 
 ```{r lk4}
-tnu_drs_help()
+uris <- c(
+    "drs://dg.4503/15fdd543-9875-4edf-8bc2-22985473dab6",
+    "drs://dg.4503/3c861ec6-d810-4058-b851-c0b19dd5933e",
+    "drs://dg.4503/374a0ad9-b3a2-47f3-8860-5083b302e478"
+)
+if (tnu_workspace_ok())
+    drs_copy(uris, tempfile())
+```
+
+## Generating information about DRS
+
+There are a couple functions available that will provide information about the
+DRS URLS provided. `drs_head` will query the DRS object and print the set number
+of bytes while `drs_info` will return information about the DRS URIs.
+
+```{r lk5}
+if (tnu_workspace_ok()) {
+    drs_info(uris)
+    drs_head(uris, 100)
+}
+```
+
+## Utilizing firecloud for table functionality
+
+Using the firecloud python module allows users to get information about tables
+within their AnVIL workspace via the api. Below we demonstrate how a user can
+utilize these functions via R / basilisk.
+
+## Table information
+
+Within this package there are two function that display general table
+information. `tables()` displays a tibble with 3 columns; table, count, and
+column names. `table()` requires a specific table name and will display a tibble
+of the information within that table.
+
+```{r lk6}
+if (tnu_workspace_ok()) {
+    tables()
+    table("test_table")
+}
+```
+
+## Additon or deletion of table information
+
+A user may wish to upload a new table or add rows to a current table. The
+function `table_upload` will allow the user to add information to a table within
+their AnVIL workspace. We also provide deletion functionality which allows the
+user the ability to delete single or multiple rows from a given table.
+
+```{r lk7}
+if (tnu_workspace_ok()) {
+    mycars <- head(mtcars) |>
+        dplyr::as_tibble(rownames = "model_id") |>
+        dplyr::mutate(`entity:model_id` = gsub(" ", "_", `entity:model_id`))
+
+    tables()
+    table("model")
+    table_upload(mycars)
+
+    table_delete_values("model", "Mazda_RX4")
+    table("model")
+}
+```
+
+## Shiny representation of tables
+
+`table_gadget` creates a shiny app that displays information about the available
+tables in the workspace. A user could select a certain table and on exit it will
+return that table within their R session as a tibble.
+
+```{r lk8}
+if (tnu_workspace_ok())
+    table_gadget()
+```
+
+## Session information
+
+```{r lk9}
+sessionInfo()
 ```
