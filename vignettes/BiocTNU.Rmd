@@ -112,7 +112,7 @@ if (tnu_workspace_ok()) {
 }
 ```
 
-## Utilizing firecloud for table functionality
+# Firecloud functionality
 
 Using the firecloud python module allows users to get information about tables
 within their AnVIL workspace via the api. Below we demonstrate how a user can
@@ -143,7 +143,7 @@ user the ability to delete single or multiple rows from a given table.
 if (tnu_workspace_ok()) {
     mycars <- head(mtcars) |>
         dplyr::as_tibble(rownames = "model_id") |>
-        dplyr::mutate(`entity:model_id` = gsub(" ", "_", `entity:model_id`))
+        dplyr::mutate(model_id = gsub(" ", "_", model_id))
 
     tables()
     table("model")
@@ -165,8 +165,33 @@ if (tnu_workspace_ok())
     table_gadget()
 ```
 
-## Session information
+# Advanced implementation
+
+The next section will demonstrate how to access other functions within the
+`firecloud` module that may not be a part of this package. The first
+thing to do is to get a basilisk session started. Then we will import the module
+of interest, in this example it will be `firecloud`. Using
+`reticulate::py_help()` displays the help page for the available functions.
+Then you can just run the function of interest using the specified arguments.
 
 ```{r lk9}
+if (tnu_workspace_ok()) {
+    proc <- basiliskStart(bsklenv)
+    firecloud <- reticulate::import("firecloud")
+    reticulate::py_help(firecloud$api)
+    response <- firecloud$api$list_entity_types(tnu_workspace_namespace(),
+        tnu_workspace_name())
+    read.delim(text = response$text, sep = "\t", header = FALSE)
+    basiliskStop(proc)
+}
+```
+
+We utilized `rjsoncons::jmespath` and `jsonlite::fromJSON` to make the data more
+presentable within a tibble. This might be something of interest to users who
+want to expand on other functions from the modules used within this package.
+
+# Session information
+
+```{r lk10}
 sessionInfo()
 ```
