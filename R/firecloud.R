@@ -49,8 +49,7 @@ firecloud_validate <-
 #'     tables()
 #'     table("test_table")
 #'     mycars <- head(mtcars) |>
-#'         dplyr::as_tibble(rownames = "model_id") |>
-#'         dplyr::mutate(`entity:model_id` = gsub(" ", "_", `entity:model_id`))
+#'         dplyr::as_tibble(rownames = "model_id")
 #'     table_upload(mycars)
 #'     table_delete_values("model", "Mazda_RX4")
 #'     table_gadget()
@@ -70,14 +69,17 @@ tables <-
         "list_entity_types",
         namespace = namespace,
         workspace = name)
-    #response$text |> listviewer::jsonedit()
     response$raise_for_status()
+
+    clmns <- Map(c,
+        jmesquery(response, "*.idName"),
+        jmesquery(response, "*.attributeNames")
+    )
 
     dplyr::tibble(
         table = jmesquery(response, "keys(@)"),
-        count = jmesquery(response, "*.count"),
-        colnames = paste0(jmesquery(response, "*.idName"), ", ",
-            sapply(jmesquery(response, "*.attributeNames"), toString))
+        n_row = jmesquery(response, "*.count"),
+        colnames = vapply(unname(clmns), toString, character(1))
     )
 }
 
@@ -155,6 +157,27 @@ table_delete_values <-
     }
 }
 
+.findEntity <- 
+    function(tbl)
+{
+    ## Test for entity: in any of the columns
+    ## Test for _id in any of the columns
+    ## If neither, assume first column in id column
+    if (any(grepl("entity:", colnames(tbl)))) {
+        entity_col <- grep("entity:", colnames(tbl))
+    } else if (any(grepl("_id", colnames(tbl)))) {
+        id_col <- grep("_id", colnames(tbl))
+        colnames(tbl)[id_col] <- paste0('entity:', colnames(tbl)[id_col])
+        entity_col <- id_col
+    } else {
+        colnames(tbl)[1] <- paste0('entity:', colnames(tbl)[1])
+        entity_col <- 1
+    }
+
+    tbl[[entity_col]] <- gsub(" ", "_", tbl[[entity_col]])
+    tbl
+}
+
 #' @rdname firecloud
 #'
 #' @description `table_upload()` uploads a table to the AnVIL workspace.
@@ -174,13 +197,9 @@ table_upload <-
         namespace = namespace, name = name
     )
 
-    if (!startsWith("entity:", colnames(tbl)[1]))
-        colnames(tbl)[1] <- paste0('entity:', colnames(tbl)[1])
+    entity_tbl <- .findEntity(tbl)
 
-    if (length(grep(" ", tbl[[1]])) > 0L)
-        tbl[[1]] <- gsub(" ", "_", tbl[[1]])
-
-    write.table(tbl, where <- tempfile(), sep = "\t", row.names = FALSE)
+    write.table(entity_tbl, where <- tempfile(), sep = "\t", row.names = FALSE)
 
     response <- firecloud_do(
         "upload_entities_tsv",
@@ -192,7 +211,8 @@ table_upload <-
     response$raise_for_status()
 }
 
-
+#' @importFrom miniUI miniPage
+#' @importFrom DT DTOutput
 .gadget_ui <-
     function(title)
 {
@@ -204,6 +224,7 @@ table_upload <-
     }
 }
 
+#' @importFrom DT renderDT formatStyle datatable
 .gadget_renderDT <-
     function(tbl)
 {
@@ -241,6 +262,7 @@ table_upload <-
     }
 }
 
+#' @importFrom shiny runGadget
 .gadget_run <-
     function(title, tibble, DONE_FUN)
 {
