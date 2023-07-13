@@ -48,8 +48,6 @@ and python, using the Bioconductor [basilisk][] package.
 As of 10/2022, AnVILTNU exists in a github repository.  To install and
 use properly with R in AnVIL
 
-- ensure there is a .Renviron file in the home folder with content
-  `PIP_USER=false`
 - use `BiocManager::install("vjcitn/AnVILTNU")`
 - verify that `library(AnVILTNU); example(drs_access)` produces a
   signed URL

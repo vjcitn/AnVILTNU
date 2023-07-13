@@ -1,6 +1,6 @@
 Package: AnVILTNU
 Title: Interface to terra-notebook-utils
-Version: 0.0.10
+Version: 0.0.11
 Authors@R:
     c(person(
         given = "Vince",
@@ -31,7 +31,7 @@ Description: The 'terra-notebook-utils' Python module
 Depends: R (>= 4.0.0)
 Imports:
     dplyr, jsonlite, rjsoncons,
-    reticulate, basilisk,
+    reticulate, basilisk (>= 1.13.3),
     shiny, DT, miniUI, htmlwidgets
 Suggests:
     AnVIL,
