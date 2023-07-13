@@ -121,9 +121,10 @@ utilize these functions via R / basilisk.
 ## Table information
 
 Within this package there are two function that display general table
-information. `tables()` displays a tibble with 3 columns; table, count, and
-column names. `table()` requires a specific table name and will display a tibble
-of the information within that table.
+information. `tables()` displays a tibble with 4 columns; table name,
+row count, column count, and column names. `table()` requires a
+specific table name and will display a tibble of the information
+within that table.
 
 ```{r lk6}
 if (tnu_workspace_ok()) {
@@ -156,23 +157,25 @@ if (tnu_workspace_ok()) {
 
 ## Shiny representation of tables
 
-`table_gadget` creates a shiny app that displays information about the available
-tables in the workspace. A user could select a certain table and on exit it will
-return that table within their R session as a tibble.
+`tables_gadget` creates a shiny app that displays information about
+the available tables in the workspace. A user could select a certain
+table and on exit it will return that table within their R session as
+a tibble.
 
 ```{r lk8}
 if (tnu_workspace_ok())
-    table_gadget()
+    tables_gadget()
 ```
 
-# Advanced implementation
+# Advanced use
 
-The next section will demonstrate how to access other functions within the
-`firecloud` module that may not be a part of this package. The first
-thing to do is to get a basilisk session started. Then we will import the module
-of interest, in this example it will be `firecloud`. Using
-`reticulate::py_help()` displays the help page for the available functions.
-Then you can just run the function of interest using the specified arguments.
+The next section will demonstrate how to access other functions within
+the `firecloud` module that may not be a part of this package. The
+first thing to do is to get a basilisk session started. Then we will
+import the module of interest, in this example it will be
+`firecloud`. Using `reticulate::py_help()` displays the help page for
+the available functions.  Then you can just run the function of
+interest using the specified arguments.
 
 ```{r lk9}
 if (tnu_workspace_ok()) {
@@ -186,9 +189,10 @@ if (tnu_workspace_ok()) {
 }
 ```
 
-We utilized `rjsoncons::jmespath` and `jsonlite::fromJSON` to make the data more
-presentable within a tibble. This might be something of interest to users who
-want to expand on other functions from the modules used within this package.
+We utilized `rjsoncons::jmespath` and `jsonlite::fromJSON` to make the
+data more presentable within a tibble. This might be something of
+interest to users who want to expand on other functions from the
+modules used within this package.
 
 # Session information
 
