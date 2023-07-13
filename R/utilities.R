@@ -10,6 +10,12 @@ is_scalar_integer <-
     is.numeric(x) && length(x) == 1L && !is.na(x)
 }
 
+is_scalar_logical <-
+    function(x)
+{
+    is.logical(x) && length(x) == 1L && !is.na(x)
+}
+
 is_character <-
     function(x)
 {

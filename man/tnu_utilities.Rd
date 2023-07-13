@@ -4,6 +4,7 @@
 \alias{tnu_top}
 \alias{tnu_help}
 \alias{tnu_drs_help}
+\alias{tnu_table_help}
 \title{Helpers to Discover terra-notebook-utils Functionality}
 \usage{
 tnu_top()
@@ -11,6 +12,8 @@ tnu_top()
 tnu_help()
 
 tnu_drs_help()
+
+tnu_table_help()
 }
 \description{
 \code{tnu_top()} demonstrates use of basilisk to present
@@ -20,7 +23,10 @@ features of terra-notebook-utils
 terra-notebook-utils python functions
 
 \code{tnu_drs_help()} provides help on
-terra-notebook-utils' 'drs' module.
+terra-notebook-utils 'drs' module.
+
+\code{tnu_table_help()} provides help on
+terra-notebook-utils 'table' module.
 }
 \examples{
 tnu_top()
@@ -28,5 +34,7 @@ tnu_top()
 tnu_help()
 
 tnu_drs_help()
+
+tnu_table_help()
 
 }

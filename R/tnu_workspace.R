@@ -10,12 +10,17 @@ BIOC_TNU <- new.env(parent = emptyenv())
 #' @param x NULL (get the existing value) or character(1) workspace
 #'     namespace and name, formatted as `NAMESPACE/NAME`.
 #'
+#' @param is_google_cloud logical(1) is the workspace on the google
+#'     cloud? If so, ensure that the environment variable
+#'     `WORKSPACE_BUCKET` is set, as this is used by
+#'     terra-notebook-utils during authentication.
+#'
 #' @details `tnu_workspace()` with no argument checks to see if the
 #'     workspace namespace and name have been assigned through a
 #'     previous call to `tnu_workspace()`, or are defined by the
-#'     package options `BiocTNU.WORKSPACE_NAMESPACE`,
-#'     `BiocTNU.WORKSPACE_NAME` (set via
-#'     `options(BiocTNU.WORKSPACE_NAME = ...)`), or by the system
+#'     package options `AnVILTNU.WORKSPACE_NAMESPACE`,
+#'     `AnVILTNU.WORKSPACE_NAME` (set via
+#'     `options(AnVILTNU.WORKSPACE_NAME = ...)`), or by the system
 #'     environment variables `WORKSPACE_NAMESPACE`,
 #'     `WORKSPACE_NAME`. Calls to `tnu_workspace()` have precedence
 #'     over package options, which have precedence over system
@@ -62,9 +67,9 @@ tnu_workspace_get <-
     ## read workspace namespace and name from the environment, then
     ## options
     namespace <- Sys.getenv("WORKSPACE_NAMESPACE", NA_character_)
-    namespace <- getOption("BiocTNU.WORKSPACE_NAMESPACE", namespace)
+    namespace <- getOption("AnVILTNU.WORKSPACE_NAMESPACE", namespace)
     name <- Sys.getenv("WORKSPACE_NAME", NA_character_)
-    name <- getOption("BiocTNU.WORKSPACE_NAME", name)
+    name <- getOption("AnVILTNU.WORKSPACE_NAME", name)
 
     if (is.na(name) || is.na(namespace)) {
         txt <- paste0(

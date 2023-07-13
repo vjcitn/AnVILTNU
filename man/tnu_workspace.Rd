@@ -12,6 +12,11 @@ tnu_workspace_ok()
 \arguments{
 \item{x}{NULL (get the existing value) or character(1) workspace
 namespace and name, formatted as \code{NAMESPACE/NAME}.}
+
+\item{is_google_cloud}{logical(1) is the workspace on the google
+cloud? If so, ensure that the environment variable
+\code{WORKSPACE_BUCKET} is set, as this is used by
+terra-notebook-utils during authentication.}
 }
 \description{
 \code{tnu_workspace()} gets (when \code{x = NULL}) or sets and
@@ -25,9 +30,9 @@ options, or system environment variables.
 \code{tnu_workspace()} with no argument checks to see if the
 workspace namespace and name have been assigned through a
 previous call to \code{tnu_workspace()}, or are defined by the
-package options \code{BiocTNU.WORKSPACE_NAMESPACE},
-\code{BiocTNU.WORKSPACE_NAME} (set via
-\code{options(BiocTNU.WORKSPACE_NAME = ...)}), or by the system
+package options \code{AnVILTNU.WORKSPACE_NAMESPACE},
+\code{AnVILTNU.WORKSPACE_NAME} (set via
+\code{options(AnVILTNU.WORKSPACE_NAME = ...)}), or by the system
 environment variables \code{WORKSPACE_NAMESPACE},
 \code{WORKSPACE_NAME}. Calls to \code{tnu_workspace()} have precedence
 over package options, which have precedence over system

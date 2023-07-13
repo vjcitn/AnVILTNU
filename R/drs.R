@@ -117,31 +117,32 @@ drs_copy <-
         workspace_namespace = namespace,
         workspace_name = name
     )
-    names <- drs_info(uri)$name
+    names <- drs_info(drs_uri)$name
     file.path(destination, names)
 }
 
+#' @importFrom utils download.file
 .drs_copy_local <-
     function(drs_uri, destination, namespace, name)
 {
     if (!dir.exists(destination))
         dir.create(destination, recursive = TRUE)
 
-    access <- drs_access(drs_uri, namespace, name)
+    access_uri <- drs_access(drs_uri, namespace, name)
     info <- drs_info(drs_uri)
-    result <- Map(function(access, info, destination) {
+    result <- Map(function(access_uri, info, destination) {
         to_file <- file.path(destination, info$name)
-        download.file(access, to_file, quiet = interactive())
+        download.file(access_uri, to_file, quiet = interactive())
         md5sum <- tools::md5sum(to_file)
         if (!identical(as.vector(md5sum), info$checksums$md5)) {
             stop(
-                "md5sum of '", uri, "' differs from expected:\n",
+                "md5sum of '", access_uri, "' differs from expected:\n",
                 "  observed: ", md5sum, "\n",
                 "  expected: ", info$checksums$md5sum
             )
         }
         to_file
-    }, access, info, MoreArgs = list(destination = destination))
+    }, access_uri, info, MoreArgs = list(destination = destination))
     unlist(result)
 }
 
