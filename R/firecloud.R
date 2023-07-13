@@ -235,9 +235,17 @@ table_upload <-
 {
     force(title)
     function() {
-        miniPage(p(strong("Current workspace:"), textOutput("workspace",
-            inline = TRUE)), miniContentPanel(DTOutput("gadget_tibble",
-            height = "100%")), gadgetTitleBar(title))
+        miniPage(
+            gadgetTitleBar(title),
+            miniContentPanel(
+                p(
+                    "Select the table of interest. Click 'Done' to import ",
+                    "into R."
+                ),
+                DTOutput("gadget_tibble", height = "100%"),
+                p("Workspace:", textOutput("workspace", inline = TRUE))
+            )
+        )
     }
 }
 
@@ -248,9 +256,25 @@ table_upload <-
     function(tbl)
 {
     force(tbl)
-    renderDT(formatStyle(datatable(tbl, fillContainer = TRUE,
-        selection = list(mode = "single", target = "row"), options = list(dom = "ftp")),
-        seq_len(NROW(tbl) + 1L) - 1L, `vertical-align` = "top"))
+    renderDT(formatStyle(
+        datatable(
+            tbl, fillContainer = TRUE,
+            selection = list(mode = "single", target = "row"),
+            options = list(
+                dom = "ftp",
+                columnDefs = list(list(
+                    ## truncate column 4 (column names) to 70 characters...
+                    targets = 4,
+                    render = JS(
+                        "function(data, type, row, meta) {",
+                        "return type === 'display' && data.length > 70 ?",
+                        "'<span title=\"' + data + '\">' + data.substr(0, 67) + '...</span>' : data;",
+                        "}")
+                ))
+            )
+        ),
+        seq_len(NROW(tbl) + 1L) - 1L, `vertical-align` = "top"
+    ))
 }
 
 #' @importFrom shiny renderText observeEvent stopApp p strong textOutput
@@ -298,17 +322,22 @@ table_upload <-
 
 #' @rdname firecloud
 #'
-#' @description `table_gadget()` displays tables in the workspace and can be 
-#'     returned as a tibble.
+#' @description `tables_gadget()` provides a simple graphical interface
+#'     to allow selection of a table from the workspace.
 #'
-#' @return `table_gadget()` returns a tibble representing the selected table.
+#' @return `tables_gadget()` returns a tibble representing the selected table.
+#'
+#' @importFrom dplyr mutate
 #'
 #' @export
-table_gadget <- 
+tables_gadget <-
     function(namespace = tnu_workspace_namespace(), name = tnu_workspace_name())
 {
-    DONE_FUN <- function(tibble, row_selected) tibble$table[row_selected]
-    table <- .gadget_run("Tables", tables(namespace, name), DONE_FUN)
+    firecloud_validate(namespace, name)
+    DONE_FUN <- function(tibble, row_selected)
+        tibble$table[row_selected]
+    title <- paste0("Tables in ", tnu_workspace())
+    table <- .gadget_run(title, tables(namespace, name), DONE_FUN)
     if (length(table)) {
         table(table, namespace, name)
     } else {

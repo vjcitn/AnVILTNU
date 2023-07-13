@@ -5,7 +5,7 @@
 \alias{table}
 \alias{table_delete_values}
 \alias{table_upload}
-\alias{table_gadget}
+\alias{tables_gadget}
 \title{Data table commands through firecloud}
 \usage{
 tables(namespace = tnu_workspace_namespace(), name = tnu_workspace_name())
@@ -30,7 +30,7 @@ table_upload(
   name = tnu_workspace_name()
 )
 
-table_gadget(
+tables_gadget(
   namespace = tnu_workspace_namespace(),
   name = tnu_workspace_name()
 )
@@ -60,7 +60,7 @@ be performed, without actually doing the action.}
 \code{table_delete_values()} returns the name of the table that had the
 row deleted from.
 
-\code{table_gadget()} returns a tibble representing the selected table.
+\code{tables_gadget()} returns a tibble representing the selected table.
 }
 \description{
 \code{tables()} lists the available tables in a workspace with the
@@ -72,8 +72,8 @@ corresponding row count and column names.
 
 \code{table_upload()} uploads a table to the AnVIL workspace.
 
-\code{table_gadget()} displays tables in the workspace and can be
-returned as a tibble.
+\code{tables_gadget()} provides a simple graphical interface
+to allow selection of a table from the workspace.
 }
 \examples{
 if (tnu_workspace_ok()) {
@@ -83,7 +83,7 @@ if (tnu_workspace_ok()) {
         dplyr::as_tibble(rownames = "model_id")
     table_upload(mycars)
     table_delete_values("model", "Mazda_RX4")
-    table_gadget()
+    tables_gadget()
 }
 
 }
