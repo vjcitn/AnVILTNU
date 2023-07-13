@@ -19,9 +19,9 @@ table(
 table_delete_values(
   table,
   values,
+  dry.run = TRUE,
   namespace = tnu_workspace_namespace(),
-  name = tnu_workspace_name(),
-  dry.run = TRUE
+  name = tnu_workspace_name()
 )
 
 table_upload(
@@ -46,6 +46,9 @@ details and default value.}
 
 \item{values}{character(1) The '*_id' of the row that should be deleted from
 the table.}
+
+\item{dry.run}{logical(1) When TRUE (default) report the action to
+be performed, without actually doing the action.}
 
 \item{tbl}{A tibble to uploaded as a data table to the workspace.}
 }

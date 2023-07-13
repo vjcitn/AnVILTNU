@@ -29,7 +29,10 @@ Description: The 'terra-notebook-utils' Python module
     reproducible Python environment independent of other Python
     installations on the user system.
 Depends: R (>= 4.0.0)
-Imports: reticulate, basilisk, shiny, DT, miniUI
+Imports:
+    dplyr, jsonlite, rjsoncons,
+    reticulate, basilisk,
+    shiny, DT, miniUI, htmlwidgets
 Suggests:
     AnVIL,
     knitr,

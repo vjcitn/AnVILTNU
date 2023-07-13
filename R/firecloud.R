@@ -11,12 +11,15 @@ firecloud_do <-
     }, ...)
 }
 
+#' @importFrom jsonlite fromJSON
+#'
+#' @importFrom rjsoncons jmespath
 jmesquery <-
     function(response, query)
 {
     response$text |>
-        rjsoncons::jmespath(query) |>
-        jsonlite::fromJSON()
+        jmespath(query) |>
+        fromJSON()
 }
 
 firecloud_validate <-
@@ -52,8 +55,10 @@ firecloud_validate <-
 #'         dplyr::as_tibble(rownames = "model_id")
 #'     table_upload(mycars)
 #'     table_delete_values("model", "Mazda_RX4")
-#'     table_gadget()
+#'     tables_gadget()
 #' }
+#'
+#' @importFrom dplyr tibble as_tibble rename_with starts_with
 #'
 #' @export
 tables <-
@@ -68,7 +73,8 @@ tables <-
     response <- firecloud_do(
         "list_entity_types",
         namespace = namespace,
-        workspace = name)
+        workspace = name
+    )
     response$raise_for_status()
 
     clmns <- Map(c,
@@ -76,9 +82,10 @@ tables <-
         jmesquery(response, "*.attributeNames")
     )
 
-    dplyr::tibble(
+    tibble(
         table = jmesquery(response, "keys(@)"),
         n_row = jmesquery(response, "*.count"),
+        n_col = lengths(clmns, use.names = FALSE),
         colnames = vapply(unname(clmns), toString, character(1))
     )
 }
@@ -90,6 +97,8 @@ tables <-
 #' @param table character(1) table name.
 #'
 #' @return `table()` a tibble of data from the table.
+#'
+#' @importFrom utils read.delim write.table
 #'
 #' @export
 table <-
@@ -113,8 +122,8 @@ table <-
     response$raise_for_status()
 
     read.delim(text = response$text, sep = "\t", header = TRUE) |>
-        dplyr::as_tibble() |>
-        dplyr::rename_with(~ gsub("entity.", "", .x), starts_with("entity"))
+        as_tibble() |>
+        rename_with(~ gsub("entity.", "", .x), starts_with("entity"))
 }
 
 #' @rdname firecloud
@@ -124,26 +133,33 @@ table <-
 #' @param values character(1) The '*_id' of the row that should be deleted from
 #'     the table.
 #'
+#' @param dry.run logical(1) When TRUE (default) report the action to
+#'     be performed, without actually doing the action.
+#'
 #' @return `table_delete_values()` returns the name of the table that had the
 #'     row deleted from.
 #'
-#' @export 
+#' @export
 table_delete_values <-
     function(
         table,
-        values, 
+        values,
+        dry.run = TRUE,
         namespace = tnu_workspace_namespace(),
-        name = tnu_workspace_name(), 
-        dry.run = TRUE)
+        name = tnu_workspace_name())
 {
     firecloud_validate(
         namespace = namespace, name = name,
         is_scalar_character(table), table %in% tables()[[1]],
-        is_scalar_character(values), values %in% table(table)[[1]]
+        is_scalar_character(values), values %in% table(table)[[1]],
+        is_scalar_logical(dry.run)
     )
 
     if (dry.run) {
-        message(paste0(values, " will be deleted from ", table, ". Re-run with dry.run = FALSE"))
+        message(
+            "'", values, "' will be deleted from '", table, "'. ",
+            "Re-run with dry.run = FALSE"
+        )
     } else {
         response <- firecloud_do(
             "delete_entity_type",
@@ -153,16 +169,16 @@ table_delete_values <-
             ename = values
         )
         response$raise_for_status()
-    table
+        table
     }
 }
 
-.findEntity <- 
+.find_entity <-
     function(tbl)
 {
     ## Test for entity: in any of the columns
     ## Test for _id in any of the columns
-    ## If neither, assume first column in id column
+    ## If neither, assume first column is id column
     if (any(grepl("entity:", colnames(tbl)))) {
         entity_col <- grep("entity:", colnames(tbl))
     } else if (any(grepl("_id", colnames(tbl)))) {
@@ -197,7 +213,7 @@ table_upload <-
         namespace = namespace, name = name
     )
 
-    entity_tbl <- .findEntity(tbl)
+    entity_tbl <- .find_entity(tbl)
 
     write.table(entity_tbl, where <- tempfile(), sep = "\t", row.names = FALSE)
 
@@ -211,7 +227,8 @@ table_upload <-
     response$raise_for_status()
 }
 
-#' @importFrom miniUI miniPage
+#' @importFrom miniUI miniPage miniContentPanel gadgetTitleBar
+#'
 #' @importFrom DT DTOutput
 .gadget_ui <-
     function(title)
@@ -225,6 +242,8 @@ table_upload <-
 }
 
 #' @importFrom DT renderDT formatStyle datatable
+#'
+#' @importFrom htmlwidgets JS
 .gadget_renderDT <-
     function(tbl)
 {
@@ -234,6 +253,7 @@ table_upload <-
         seq_len(NROW(tbl) + 1L) - 1L, `vertical-align` = "top"))
 }
 
+#' @importFrom shiny renderText observeEvent stopApp p strong textOutput
 .gadget_server <-
     function(tibble, DONE_FUN)
 {
@@ -268,8 +288,11 @@ table_upload <-
 {
     stopifnot(is_scalar_character(title), is.data.frame(tibble))
     suppressMessages({
-        runGadget(.gadget_ui(title), .gadget_server(tibble, DONE_FUN),
-            stopOnCancel = FALSE)
+        runGadget(
+            .gadget_ui(title),
+            .gadget_server(tibble, DONE_FUN),
+            stopOnCancel = FALSE
+        )
     })
 }
 
@@ -288,8 +311,7 @@ table_gadget <-
     table <- .gadget_run("Tables", tables(namespace, name), DONE_FUN)
     if (length(table)) {
         table(table, namespace, name)
-    }
-    else {
+    } else {
         invisible()
     }
 }
