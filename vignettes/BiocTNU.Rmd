@@ -24,7 +24,7 @@ of which AnVIL/Terra forms a part.
 
 [DataBiosphere]: https://www.databiosphere.org
 
-The [terra-notebook-utils][ python modules is described as a "Python
+The [terra-notebook-utils][] python modules is described as a "Python
 API and CLI providing utilities for working with DRS objects, VCF
 files, and the Terra notebook environment."
 
@@ -40,17 +40,72 @@ the `drs_access` command uses a very particular interface between R
 and python, using the Bioconductor [basilisk][] package.
 
 [basilisk]: https://bioconductor.org/packages/basilisk
+[AnVILTNU]: https://github.com/vjcitn/AnVILTNU
 
 # Basic concepts
 
-## Installing in an AnVIL workspace, Oct 2022
+## Installing in an AnVIL workspace, July 2023
 
-As of 10/2022, AnVILTNU exists in a github repository.  To install and
-use properly with R in AnVIL
+As of 07/2023, AnVILTNU exists in a github repository.  To install and
+use properly with R in AnVIL, make sure that [basilisk][] is installed
+and at least at version 1.13.1; one way to do this is to install from
+the GitHub repository.
 
-- use `BiocManager::install("vjcitn/AnVILTNU")`
-- verify that `library(AnVILTNU); example(drs_access)` produces a
-  signed URL
+```{r basilisk, eval = FALSE}
+test <-
+    "basilisk" %in% rownames(installed.packages()) &&
+    packageVersion("basilisk") > "1.13.1"
+if (!test)
+    BiocManager::install("LTLA/basilisk")
+```
+
+Install the [AnVILTNU][] package with
+
+```{r, eval = FALSE}
+BiocManager::install("vjcitn/AnVILTNU")
+```
+
+Complete the installation by running the simple help function
+`AnVILTNU::tnu_help()`. This will install the necessary Python version
+and dependencies.
+
+Basic tests of the installation include
+
+```{r}
+## test package installation and basic configuration; should return
+## the namespace/name of the current AnVIL workspace.
+AnVILTNU::tnu_workspace()
+```
+
+```{r, eval = FALSE}
+## test basilisk / Python installation. Should present a help page
+## summarizing use
+AnVILTNU::tnu_help()
+```
+
+### Troubleshooting installations
+
+- `tnu_help()` fails during initial conda installation with 'error
+  code 137'. This occurs when the instance does not have sufficient
+  memory for basilisk conda installation. A 4 CPU / 15 GB instance has
+  been sufficient during testing.
+
+- `drs_access()` fails with a message like
+
+    ```
+    Error: terra_notebook_utils.drs.DRSResolutionError: Unexpected
+    response while resolving DRS URI. Expected status 200,
+    got 500. Received error contacting Bond. The server encountered an
+    internal error and was unable to complete your request. Either the
+    server is overloaded or there is an error in the application.
+    ```
+
+  This can be because Terra / AnVIL 'external entities' are not
+  configured ('Hamburger' - User - Profile - External Entities' for
+  access to the requested entity. The examples on `?drs_access`
+  require NHLBI BioData Catalyst access. At time of writing a bug in
+  Terra requires Kids First DRC access. It doesn't hurt to enable
+  NHGRI AnVIL Data Commons.
 
 ## Probing available features
 
@@ -59,7 +114,7 @@ defined in the AnVILTNU package to probe or use terra-notebook-utils.
 We can get the names of all modules available after importing
 terra-notebook-utils.
 
-```{r lk1}
+```{r lk1, message = FALSE}
 library(AnVILTNU)
 tnu_top()
 ```
