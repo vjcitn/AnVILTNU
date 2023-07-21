@@ -18,5 +18,7 @@ terra-notebook-utils for use in AnVIL.  By "regulated" we mean that
 the entire python ecosystem used to work with terra-notebook-utils is
 defined in a virtual environment.
 
-Note: in AnVIL, a `.Renviron` must have `PIP_USER=false` for proper
-installation with basilisk.
+The AnVILTNU [package vignette][] provides essential instructions for
+installation and troubleshooting.
+
+[package vignette]: https://github.com/vjcitn/AnVILTNU/blob/main/vignettes/BiocTNU.Rmd

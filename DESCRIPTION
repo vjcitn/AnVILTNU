@@ -1,6 +1,6 @@
 Package: AnVILTNU
 Title: Interface to terra-notebook-utils
-Version: 0.0.11
+Version: 0.0.12
 Authors@R:
     c(person(
         given = "Vince",
